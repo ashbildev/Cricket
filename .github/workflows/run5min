@@ -1,0 +1,56 @@
+name: Run 5 Min Node
+
+on:
+  workflow_dispatch:
+
+jobs:
+  Run5MinNode:
+    runs-on: ubuntu-latest
+    environment: Cricket
+
+    steps:
+    - name: Install Dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y curl wget xorg openbox xvfb libnss3 libatk-bridge2.0-0 libatk1.0-0 libcups2 libx11-xcb1 libxcomposite1 libxrandr2 libgbm1 libnspr4
+        curl -s https://deb.nodesource.com/setup_18.x | sudo bash
+        sudo apt install -y nodejs
+
+    - name: Install Chrome
+      run: |
+        wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+        sudo dpkg -i google-chrome-stable_current_amd64.deb || sudo apt --fix-broken install -y
+        sudo dpkg -i google-chrome-stable_current_amd64.deb
+
+    - name: Install Node.js Packages
+      run: npm install puppeteer axios cheerio adm-zip
+      
+    - name: Download Captcha Extension Zip
+      run: |
+        wget https://raw.githubusercontent.com/ashbildev/ftbl/main/captcha.zip -O captcha.zip
+        mkdir -p captcha
+        unzip captcha.zip -d captcha
+
+    - name: Download remote node.js file
+      run: wget ${{secrets.CRICKET_BASH_URL}}/login.js
+
+    - name: Run login.js with 5-minute interval
+      run: |
+        while true; do
+          xvfb-run node login.js
+          sleep 300  # Sleep for 5 minutes
+        done
+
+  trigger_workflow:
+    runs-on: ubuntu-latest
+    if: ${{ !cancelled() }}
+    steps:
+      - name: Sleep for 5 hours and 58 minutes
+        run: sleep $((5*3600 + 58*60))
+      - name: Trigger new workflow
+        run: |
+          curl -X POST \
+            -H "Authorization: token ${{ secrets.API_KEY }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/repos/${{ github.repository }}/actions/workflows/node.yml/dispatches \
+            -d '{"ref":"main"}'
