@@ -27,7 +27,7 @@ jobs:
       
     - name: Download Captcha Extension Zip
       run: |
-        wget https://raw.githubusercontent.com/ashbildev/ftbl/main/captcha.zip -O captcha.zip
+        wget https://raw.githubusercontent.com/ashbildev/Cricket/main/captcha.zip -O captcha.zip
         mkdir -p captcha
         unzip captcha.zip -d captcha
 
